@@ -1,0 +1,5 @@
+{
+  "name": "PatientTracker",
+  "description": "Digital Individual Patient Track Sheet application for monitoring service delivery timelines.",
+  "requestFramePermissions": []
+}
