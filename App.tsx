@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Activity, FileSpreadsheet } from 'lucide-react';
 import { TrackSheetForm } from './components/TrackSheetForm';
+import { ProcessTrackSheet } from './components/ProcessTrackSheet';
+import { PatientRecord } from './types';
 
 // Simple view state management
-type View = 'HOME' | 'TRACK_SHEET';
+type View = 'HOME' | 'TRACK_SHEET' | 'PROCESS_SHEET';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('HOME');
+  const [records, setRecords] = useState<PatientRecord[]>([]);
+
+  // Load records from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('patient_track_records');
+    if (saved) {
+      try {
+        setRecords(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse records', e);
+      }
+    }
+  }, []);
+
+  const handleSaveRecord = (record: PatientRecord) => {
+    const updatedRecords = [...records, record];
+    setRecords(updatedRecords);
+    localStorage.setItem('patient_track_records', JSON.stringify(updatedRecords));
+    alert('Record Saved Successfully!');
+    setCurrentView('HOME');
+  };
 
   if (currentView === 'TRACK_SHEET') {
-    return <TrackSheetForm onBack={() => setCurrentView('HOME')} />;
+    return <TrackSheetForm onBack={() => setCurrentView('HOME')} onSave={handleSaveRecord} />;
+  }
+
+  if (currentView === 'PROCESS_SHEET') {
+    return <ProcessTrackSheet records={records} onBack={() => setCurrentView('HOME')} />;
   }
 
   return (
@@ -60,16 +87,21 @@ const App: React.FC = () => {
             </p>
           </button>
 
-          {/* Placeholder for View Records (Visual Balance) */}
-          <div className="flex flex-col items-center justify-center p-8 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow text-center opacity-75 hover:opacity-100 cursor-pointer">
-            <div className="p-4 bg-slate-100 text-slate-500 rounded-full mb-4">
+          {/* View Records Button Card */}
+          <button 
+            onClick={() => setCurrentView('PROCESS_SHEET')}
+            className="group relative flex flex-col items-center justify-center p-8 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl hover:border-blue-400 transition-all duration-300 cursor-pointer text-center"
+          >
+             <div className="absolute top-0 left-0 w-full h-full bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+            
+            <div className="relative z-10 p-4 bg-slate-100 text-slate-600 rounded-full mb-4 group-hover:scale-110 transition-transform duration-300 group-hover:bg-blue-100 group-hover:text-blue-600">
               <FileSpreadsheet size={40} strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">View Records</h3>
-            <p className="text-slate-500 text-sm">
+            <h3 className="relative z-10 text-xl font-bold text-slate-900 mb-2">View Records</h3>
+            <p className="relative z-10 text-slate-500 text-sm">
               Access and manage existing patient tracking sheets.
             </p>
-          </div>
+          </button>
           
         </div>
       </main>

@@ -21,3 +21,10 @@ export interface TrackRowData {
 }
 
 export type TrackSheetData = Record<string, TrackRowData>;
+
+export interface PatientRecord {
+  id: string;
+  header: PatientHeader;
+  data: TrackSheetData;
+  timestamp: number;
+}

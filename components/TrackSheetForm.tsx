@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Save, Printer, FileSpreadsheet } from 'lucide-react';
 import { SERVICE_DETAILS } from '../constants';
-import { PatientHeader, TrackSheetData, TrackRowData } from '../types';
+import { PatientHeader, TrackSheetData, TrackRowData, PatientRecord } from '../types';
 
 interface TrackSheetFormProps {
   onBack: () => void;
+  onSave: (record: PatientRecord) => void;
 }
 
 const initialRowData: TrackRowData = {
@@ -22,7 +23,7 @@ const initialRowData: TrackRowData = {
   evidence: ''
 };
 
-export const TrackSheetForm: React.FC<TrackSheetFormProps> = ({ onBack }) => {
+export const TrackSheetForm: React.FC<TrackSheetFormProps> = ({ onBack, onSave }) => {
   const [header, setHeader] = useState<PatientHeader>({
     name: '',
     mrn: '',
@@ -60,8 +61,6 @@ export const TrackSheetForm: React.FC<TrackSheetFormProps> = ({ onBack }) => {
         if (!isNaN(desiredNum) && !isNaN(actualNum) && desired.trim() !== '' && actual.trim() !== '') {
           nextRow.varianceTat = (desiredNum - actualNum).toString();
         } else {
-          // Optional: Reset variance if inputs are invalid/cleared. 
-          // This keeps the sheet clean.
           nextRow.varianceTat = '';
         }
       }
@@ -69,6 +68,22 @@ export const TrackSheetForm: React.FC<TrackSheetFormProps> = ({ onBack }) => {
       nextRows[service] = nextRow;
       return nextRows;
     });
+  };
+
+  const handleSave = () => {
+    if (!header.name || !header.mrn) {
+      alert('Please enter at least the Patient Name and MRN before saving.');
+      return;
+    }
+
+    const newRecord: PatientRecord = {
+      id: crypto.randomUUID(),
+      header,
+      data: rows,
+      timestamp: Date.now()
+    };
+
+    onSave(newRecord);
   };
 
   return (
@@ -97,7 +112,10 @@ export const TrackSheetForm: React.FC<TrackSheetFormProps> = ({ onBack }) => {
             <Printer size={16} />
             Print
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium shadow-sm transition-colors">
+          <button 
+            onClick={handleSave}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium shadow-sm transition-colors"
+          >
             <Save size={16} />
             Save Record
           </button>
